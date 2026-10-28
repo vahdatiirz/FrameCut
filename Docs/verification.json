@@ -1,0 +1,43 @@
+{
+  "version": "0.5.0",
+  "build": 6,
+  "experimental": true,
+  "parityComplete": false,
+  "originalDevelopmentEvidence": {
+    "coreTestsPassed": 50,
+    "coreTestsFailed": 0,
+    "coreExitCode": 0,
+    "physicalIPadSmokeChecks": 5,
+    "physicalChecksPassed": 5,
+    "physicalOS": "26.5.2"
+  },
+  "publicPackageChecks": {
+    "coreTestsPassed": 50,
+    "coreTestsFailed": 0,
+    "coreExitCode": 0,
+    "releaseSimulatorBuildExitCode": 0,
+    "adHocSignatureVerificationExitCode": 0,
+    "releaseSimulatorInstallExitCode": 0,
+    "releaseSimulatorLaunchExitCode": 0,
+    "releaseGUIObserved": [
+      "editor with synthetic project",
+      "Tools & help panel"
+    ],
+    "modelFilesHashVerified": 27,
+    "originalSwiftSourcesUnchanged": true,
+    "privatePathsAndDeviceIdentifiersInPublicFiles": false,
+    "debugSmokeModeExcludedFromRelease": true
+  },
+  "unverified": [
+    "Complete VN feature parity",
+    "All languages",
+    "Direct timeline gestures on all devices",
+    "All 19 motion exports",
+    "Mixed-language search input",
+    "VoiceOver and Dynamic Type",
+    "HDR",
+    "Long-film reliability",
+    "Public TestFlight and device distribution",
+    "Older OS versions and Intel simulator"
+  ]
+}

@@ -1,0 +1,319 @@
+{
+  "origin": "Public OpenAI Whisper Tiny multilingual model converted for Core ML by Argmax; tokenizer from OpenAI",
+  "files": [
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/AudioEncoder.mlmodelc/analytics/coremldata.bin",
+      "relative": "AudioEncoder.mlmodelc/analytics/coremldata.bin",
+      "size": 243,
+      "lfs": {
+        "oid": "0b25820e5b2ab0b0686b4bea147fb217d1d1bface45170ff4ffde01fa6864ae2",
+        "size": 243,
+        "pointerSize": 128
+      },
+      "gitOid": "056c9abe34fdef5d58f2823cd90234c01fdfa023",
+      "sha256": "0b25820e5b2ab0b0686b4bea147fb217d1d1bface45170ff4ffde01fa6864ae2"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/AudioEncoder.mlmodelc/coremldata.bin",
+      "relative": "AudioEncoder.mlmodelc/coremldata.bin",
+      "size": 347,
+      "lfs": {
+        "oid": "142c33ade402fe41952059f175eb855093dfe09b5d2b84624a31e3a9952ed47d",
+        "size": 347,
+        "pointerSize": 128
+      },
+      "gitOid": "1428dd9bfb3229b29f93802d6a6ea632d98edd2f",
+      "sha256": "142c33ade402fe41952059f175eb855093dfe09b5d2b84624a31e3a9952ed47d"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/AudioEncoder.mlmodelc/metadata.json",
+      "relative": "AudioEncoder.mlmodelc/metadata.json",
+      "size": 1859,
+      "lfs": null,
+      "gitOid": "7d12ec69b6863471619779e0eebb88ef7e712fde",
+      "sha256": "5dde769b4120fb9839440f0968d6da48c7d9027a70f1d73f44cb3257b1093791"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/AudioEncoder.mlmodelc/model.mil",
+      "relative": "AudioEncoder.mlmodelc/model.mil",
+      "size": 307978,
+      "lfs": null,
+      "gitOid": "dc9e1781fbb97a55017e33b13dc3b7d71d7e03cd",
+      "sha256": "69048dfa0f9e43591d57e2cad7dbc871159fe884b2d17ae8399921540ecb5809"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/AudioEncoder.mlmodelc/model.mlmodel",
+      "relative": "AudioEncoder.mlmodelc/model.mlmodel",
+      "size": 54965,
+      "lfs": {
+        "oid": "030d64a3ddd296d6f709691a66a870aab7ee9f19e5fe07e8086245fb85302802",
+        "size": 54965,
+        "pointerSize": 130
+      },
+      "gitOid": "1d7233cedc3da4c7344f4be5a83781a9603b04fe",
+      "sha256": "030d64a3ddd296d6f709691a66a870aab7ee9f19e5fe07e8086245fb85302802"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/AudioEncoder.mlmodelc/weights/weight.bin",
+      "relative": "AudioEncoder.mlmodelc/weights/weight.bin",
+      "size": 16422784,
+      "lfs": {
+        "oid": "bcd0879f6d1c61832765c7ec05d883d0dcbf1504057b13095fd315484196fc5e",
+        "size": 16422784,
+        "pointerSize": 133
+      },
+      "gitOid": "72b7a099415499f378fda9fc4c827352894abc37",
+      "sha256": "bcd0879f6d1c61832765c7ec05d883d0dcbf1504057b13095fd315484196fc5e"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/MelSpectrogram.mlmodelc/analytics/coremldata.bin",
+      "relative": "MelSpectrogram.mlmodelc/analytics/coremldata.bin",
+      "size": 243,
+      "lfs": {
+        "oid": "7f77e6457285248f99cd7aa3fd4cc2efbb17733e63e7023ac53abe1f95785d07",
+        "size": 243,
+        "pointerSize": 128
+      },
+      "gitOid": "8cce829d60c4056be93333a562d47d3bb2908b9b",
+      "sha256": "7f77e6457285248f99cd7aa3fd4cc2efbb17733e63e7023ac53abe1f95785d07"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/MelSpectrogram.mlmodelc/coremldata.bin",
+      "relative": "MelSpectrogram.mlmodelc/coremldata.bin",
+      "size": 328,
+      "lfs": {
+        "oid": "dabdc5aa69f6ef4d97dc9499f5c30514e00e96b53b750b33a5a6471363c71662",
+        "size": 328,
+        "pointerSize": 128
+      },
+      "gitOid": "b1d9e7a102f740c68cdfc7272dc5b8007c48416a",
+      "sha256": "dabdc5aa69f6ef4d97dc9499f5c30514e00e96b53b750b33a5a6471363c71662"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/MelSpectrogram.mlmodelc/metadata.json",
+      "relative": "MelSpectrogram.mlmodelc/metadata.json",
+      "size": 1848,
+      "lfs": null,
+      "gitOid": "2d1d4a4a0390fd84f87e4780bd5c76c066220991",
+      "sha256": "f2b08d80d9cdd39fc0ccdbb5fac86a5f8dd9bcaa839706c3568be6fe8abd82d4"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/MelSpectrogram.mlmodelc/model.mil",
+      "relative": "MelSpectrogram.mlmodelc/model.mil",
+      "size": 10176,
+      "lfs": null,
+      "gitOid": "a63d7fa99d6d86db1b76a1f53640cb4aa25e0210",
+      "sha256": "b8063d8e57c113472ac7c2d248e44383568a018978a753c1884ac406b997a374"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/MelSpectrogram.mlmodelc/weights/weight.bin",
+      "relative": "MelSpectrogram.mlmodelc/weights/weight.bin",
+      "size": 354080,
+      "lfs": {
+        "oid": "5b65b76f4e1dab57239e3946f6ab1314a7d1fdfa114485683dd04476ca62adb6",
+        "size": 354080,
+        "pointerSize": 131
+      },
+      "gitOid": "38b665c4196c5c8ee613e45967c28f2fb70beffa",
+      "sha256": "5b65b76f4e1dab57239e3946f6ab1314a7d1fdfa114485683dd04476ca62adb6"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/TextDecoder.mlmodelc/analytics/coremldata.bin",
+      "relative": "TextDecoder.mlmodelc/analytics/coremldata.bin",
+      "size": 243,
+      "lfs": {
+        "oid": "bfbe102ae5fb9368974a077f780441dd222fdfb0c7778c1df227ef6a73cbaada",
+        "size": 243,
+        "pointerSize": 128
+      },
+      "gitOid": "72c51452b03b50a547955b59cb25bd234310f19d",
+      "sha256": "bfbe102ae5fb9368974a077f780441dd222fdfb0c7778c1df227ef6a73cbaada"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/TextDecoder.mlmodelc/coremldata.bin",
+      "relative": "TextDecoder.mlmodelc/coremldata.bin",
+      "size": 633,
+      "lfs": {
+        "oid": "292f96416a33f9a80aaa62ead3dd5206aee6c5e6b3ac6cc02c059d38cbf04c6a",
+        "size": 633,
+        "pointerSize": 128
+      },
+      "gitOid": "c4c6ec9df05ac3db18915c50d2ba4a4d3721c601",
+      "sha256": "292f96416a33f9a80aaa62ead3dd5206aee6c5e6b3ac6cc02c059d38cbf04c6a"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/TextDecoder.mlmodelc/metadata.json",
+      "relative": "TextDecoder.mlmodelc/metadata.json",
+      "size": 4752,
+      "lfs": null,
+      "gitOid": "3ac3ea39478a97e35d648f7d835a10f461cc4a20",
+      "sha256": "01e8288ac875d02cd7155a715727f2732141bc3ea7519bcb43be0f407c7e9c28"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/TextDecoder.mlmodelc/model.mil",
+      "relative": "TextDecoder.mlmodelc/model.mil",
+      "size": 141140,
+      "lfs": null,
+      "gitOid": "0803b55bff70f043787edb3e629f5ef27c806b44",
+      "sha256": "04224ea00c5d1b3e6a00c33b7b4dafd43434a68ccf3e3fdb42cb221911b945ae"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/TextDecoder.mlmodelc/model.mlmodel",
+      "relative": "TextDecoder.mlmodelc/model.mlmodel",
+      "size": 113134,
+      "lfs": {
+        "oid": "1afdfc3a8f3e8d6afc46e1ecc5fb216eadccbf82d9c568e7dbd3955143a1cd0e",
+        "size": 113134,
+        "pointerSize": 131
+      },
+      "gitOid": "b1125838f2db9d18d70c5c297609654e9ec15b3c",
+      "sha256": "1afdfc3a8f3e8d6afc46e1ecc5fb216eadccbf82d9c568e7dbd3955143a1cd0e"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/TextDecoder.mlmodelc/weights/weight.bin",
+      "relative": "TextDecoder.mlmodelc/weights/weight.bin",
+      "size": 59216434,
+      "lfs": {
+        "oid": "d0313e1a4ffa88538c141cc3c73e6eb0e3dc54db9d574b21c7c034de688e4951",
+        "size": 59216434,
+        "pointerSize": 133
+      },
+      "gitOid": "3dcac898a051ba89f37f4a1bc2f6ede2d7ad213b",
+      "sha256": "d0313e1a4ffa88538c141cc3c73e6eb0e3dc54db9d574b21c7c034de688e4951"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/config.json",
+      "relative": "config.json",
+      "size": 1464,
+      "lfs": null,
+      "gitOid": "543fc73de943d608a1370ac9ae7916bdda2e76bc",
+      "sha256": "9b59f5e09030bd142035cb2e1456c9edfaf6de11194b79d9d05f27a86571a74c"
+    },
+    {
+      "repo": "argmaxinc/whisperkit-coreml",
+      "revision": "0f63a7800b00dd0226abd051b906c246e1907482",
+      "path": "openai_whisper-tiny/generation_config.json",
+      "relative": "generation_config.json",
+      "size": 2746,
+      "lfs": null,
+      "gitOid": "1d347402dfedd5e005cfab2688cb1b92fc971c7f",
+      "sha256": "45738853cc16804f73edfa036a56409cc7403ab99424876fc1abe0a9ccf5c6f2"
+    },
+    {
+      "repo": "openai/whisper-tiny",
+      "revision": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+      "path": "added_tokens.json",
+      "relative": "Tokenizer/added_tokens.json",
+      "size": 34604,
+      "lfs": null,
+      "gitOid": "e3d256c988462aa153dcabe2aa38b8e9b436c06f",
+      "sha256": "9715fd2243b6f06a5858b5e32950d2853f73dd5bc201aafcf76f5082a2d8acd1"
+    },
+    {
+      "repo": "openai/whisper-tiny",
+      "revision": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+      "path": "config.json",
+      "relative": "Tokenizer/config.json",
+      "size": 1983,
+      "lfs": null,
+      "gitOid": "417aa9de49a132dd3eb6a56d3be2718b15f08917",
+      "sha256": "ffdccec4f3211f4c63310f2b7098f309fe70f3952cedc5e4d11e43f5b2379b98"
+    },
+    {
+      "repo": "openai/whisper-tiny",
+      "revision": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+      "path": "merges.txt",
+      "relative": "Tokenizer/merges.txt",
+      "size": 493869,
+      "lfs": null,
+      "gitOid": "6038932a2a1f09a66991b1c2adae0d14066fa29e",
+      "sha256": "2df2990a395e35e8dfbc7511e08c12d56018d8d04691e0133e5d63b21e154dc6"
+    },
+    {
+      "repo": "openai/whisper-tiny",
+      "revision": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+      "path": "normalizer.json",
+      "relative": "Tokenizer/normalizer.json",
+      "size": 52666,
+      "lfs": null,
+      "gitOid": "dd6ae819ad738ac1a546e9f9282ef325c33b9ea0",
+      "sha256": "bf1c507dc8724ca9cf9903640dacfb69dae2f00edee4f21ceba106a7392f26dd"
+    },
+    {
+      "repo": "openai/whisper-tiny",
+      "revision": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+      "path": "special_tokens_map.json",
+      "relative": "Tokenizer/special_tokens_map.json",
+      "size": 2194,
+      "lfs": null,
+      "gitOid": "bf69932dca4b3719b59fdd8f6cc1978109509f6c",
+      "sha256": "e67ae3a0aaa99abcd9f187138e12db1f65c16a14761c50ef10eef2c174a7a691"
+    },
+    {
+      "repo": "openai/whisper-tiny",
+      "revision": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+      "path": "tokenizer.json",
+      "relative": "Tokenizer/tokenizer.json",
+      "size": 2480466,
+      "lfs": null,
+      "gitOid": "1e95340ff836fad1b5932e800fb7b8c5e6d78a74",
+      "sha256": "27fc476bfe7f17299480be2273fc0608e4d5a99aba2ab5dec5374b4482d1a566"
+    },
+    {
+      "repo": "openai/whisper-tiny",
+      "revision": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+      "path": "tokenizer_config.json",
+      "relative": "Tokenizer/tokenizer_config.json",
+      "size": 282683,
+      "lfs": null,
+      "gitOid": "d13b786c04765fb1a06492b53587752cd67665ea",
+      "sha256": "2a4c4281cf9f51ac6ccc406fdc711a087afe6530f671fa7b80953edc498275ce"
+    },
+    {
+      "repo": "openai/whisper-tiny",
+      "revision": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+      "path": "vocab.json",
+      "relative": "Tokenizer/vocab.json",
+      "size": 835550,
+      "lfs": null,
+      "gitOid": "d7016e21da8776c8a9d577d0f559600f09a240eb",
+      "sha256": "8f680bba319e01a653d2e8a5dbc17a9157179e0576e6ce74ce0c06356c6e24f9"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+Offline speech uses the multilingual OpenAI Whisper Tiny model, converted to Core ML by Argmax. The downloaded model and tokenizer revisions and SHA-256 file hashes are recorded in WhisperTiny/manifest.json. Audio stays on the device; no cloud API or subscription is configured.
+The Argmax Core ML model repository declares MIT; the OpenAI Hugging Face tokenizer repository declares Apache-2.0. Both license texts are included.
