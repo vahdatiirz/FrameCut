@@ -1,0 +1,77 @@
+{
+  "version": "0.9.0",
+  "build": "14",
+  "device": "physical iPad Pro 11-inch M4",
+  "os": "26.5.2",
+  "checks": [
+    {
+      "details": "Three synthetic clips and known English speech; user projects untouched",
+      "name": "Fixtures",
+      "passed": true
+    },
+    {
+      "details": "Separate editable sample with two source clips and one overlay persisted successfully",
+      "name": "Sample draft",
+      "passed": true
+    },
+    {
+      "details": "Bundled model produced timed words: today we are making a short film, we will add music and captions to our video.",
+      "name": "Offline captions",
+      "passed": true
+    },
+    {
+      "details": "Generated local narration and recognized its words",
+      "name": "Offline text to speech",
+      "passed": true
+    },
+    {
+      "details": "Bundled Dawn frame at zero loaded; 30 look choices and 12 FX rendered; Golden preview saved and inversion pixel verified",
+      "name": "Looks and FX frames",
+      "passed": true
+    },
+    {
+      "details": "32 styles rendered on this device; start/end color and intermediate opacity checked",
+      "name": "Transition renderers",
+      "passed": true
+    },
+    {
+      "details": "Smoke Drift, Confetti and Gold Confetti each exported at 720p30 with 1.4-second overlap; all 138 frames per film decoded on this device",
+      "name": "Atmosphere film exports",
+      "passed": true
+    },
+    {
+      "details": "720p30 with Golden look, Bloom FX, audio, captions, motion, overlay, transition and persisted project",
+      "name": "Edited film export",
+      "passed": true
+    },
+    {
+      "details": "3840\u00d72160, 60 fps, exactly 30 decoded frames in 0.5 seconds",
+      "name": "4K60 export",
+      "passed": true
+    }
+  ],
+  "success": true,
+  "userProjectsUnchanged": true,
+  "userProjectCount": 3,
+  "nativeEffectExports": [
+    {
+      "effect": "smokeDrift",
+      "frames": 138,
+      "decodeExitCode": 0,
+      "sha256": "dcc5569cb1016e102d1a02252817f780f05b2bb58abf50630770e002417810c7"
+    },
+    {
+      "effect": "confetti",
+      "frames": 138,
+      "decodeExitCode": 0,
+      "sha256": "77e8042bbc323cb8eefb5a305521c2711522f243233e2bb72db06950b864327f"
+    },
+    {
+      "effect": "goldConfetti",
+      "frames": 138,
+      "decodeExitCode": 0,
+      "sha256": "c71a9ad6503970507eca9ed5af420d0b6803d960f42c4c2023d2236f8ba9aab9"
+    }
+  ],
+  "visualScope": "Current prototype look accepted for this update; smoke realism improvements deferred; no VN equivalence claim"
+}

@@ -46,6 +46,9 @@ public struct Clip: Codable, Identifiable, Equatable {
             let first=(speedCurve?.integral(to:a) ?? a)/total,last=(speedCurve?.integral(to:b) ?? b)/total
             candidate.motion=motion.segment(from:first,to:last)
         }
+        if let fx=effects?.visualFX {
+            candidate.effects?.visualFX=fx.map{$0.segment(from:speedCurve?.outputFraction(forSourceFraction:a) ?? a,to:speedCurve?.outputFraction(forSourceFraction:b) ?? b)}
+        }
         try candidate.validate();self = candidate
     }
     public func applyingTimelineTrim(leadingOutputDelta:Double=0,trailingOutputDelta:Double=0,snap:Double=0.05) throws -> Clip {
@@ -71,6 +74,7 @@ public struct Clip: Codable, Identifiable, Equatable {
         left.end = start + sourceFraction*(end-start); right.start = left.end; right.id = UUID()
         if let speedCurve{left.speedCurve=speedCurve.segment(from:0,to:sourceFraction);right.speedCurve=speedCurve.segment(from:sourceFraction,to:1)}
         if let motion {let fraction=outputTime/duration;left.motion=motion.segment(from:0,to:fraction);right.motion=motion.segment(from:fraction,to:1)}
+        if let fx=effects?.visualFX{let fraction=outputTime/duration;left.effects?.visualFX=fx.map{$0.segment(from:0,to:fraction)};right.effects?.visualFX=fx.map{$0.segment(from:fraction,to:1)}}
         try left.validate(); try right.validate(); return (left, right)
     }
     public func validate() throws {

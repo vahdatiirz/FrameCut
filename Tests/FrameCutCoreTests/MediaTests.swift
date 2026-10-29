@@ -4,6 +4,22 @@ import CoreVideo
 import ImageIO
 @testable import FrameCutCore
 final class MediaTests: XCTestCase {
+    func testTimedFXIsIncludedInDecodedExportOnlyInsideItsWindow() async throws {
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+        defer{try? FileManager.default.removeItem(at:root)}
+        try await makeVideo(at:root.appendingPathComponent("a.mov"),red:true)
+        var p=Project();var clip=Clip(filename:"a.mov",name:"A",duration:2);var e=ClipEffects();var fx=VisualFX(kind:.invert);fx.start=0.25;fx.end=0.75;e.visualFX=[fx];clip.effects=e;p.clips=[clip]
+        let url=root.appendingPathComponent("fx.mp4");try await MediaEngine.export(p,mediaRoot:root,to:url,size:CGSize(width:320,height:180))
+        let gen=AVAssetImageGenerator(asset:AVURLAsset(url:url));gen.requestedTimeToleranceBefore = .zero;gen.requestedTimeToleranceAfter = .zero
+        let before=centerPixel(try await gen.image(at:CMTime(seconds:0.2,preferredTimescale:600)).image)
+        let active=centerPixel(try await gen.image(at:CMTime(seconds:0.8,preferredTimescale:600)).image)
+        XCTAssertGreaterThan(Int(before[0]),Int(before[1])+150)
+        XCTAssertGreaterThan(Int(active[1]),Int(active[0])+40)
+        let after=centerPixel(try await gen.image(at:CMTime(seconds:1.8,preferredTimescale:600)).image)
+        XCTAssertEqual(Int(after[0]),Int(before[0]),accuracy:15);XCTAssertEqual(Int(after[1]),Int(before[1]),accuracy:15)
+    }
+
     func testSpeechAudioExtractionPreservesLeadingAndTrailingSilenceAndMixVolume() async throws {
         let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
@@ -22,6 +38,26 @@ final class MediaTests: XCTestCase {
         func rms(_ range:Range<Int>)->Double{sqrt(range.reduce(0.0){$0+Double(samples[$1]*samples[$1])}/Double(range.count))}
         XCTAssertLessThan(rms(1600..<4800),0.001);XCTAssertEqual(rms(12800..<16000),0.1414,accuracy:0.01);XCTAssertLessThan(rms(27200..<30400),0.001)
     }
+    func testGeneratedBridgeVideoReplacesOnlyOverlapAndActuallyPlays() async throws {
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
+        defer{try? FileManager.default.removeItem(at:root)}
+        try await makeVideo(at:root.appendingPathComponent("red.mov"),red:true)
+        try await makeVideo(at:root.appendingPathComponent("bridge.mov"),red:true,timeSwitch:true,switchFrame:30)
+        var p=Project();p.clips=[Clip(filename:"red.mov",name:"A",duration:2),Clip(filename:"red.mov",name:"B",duration:2)]
+        var edge=ClipTransition(from:p.clips[0].id,to:p.clips[1].id,duration:1)
+        edge.generatedBridge=GeneratedBridgeAsset(filename:"bridge.mov",sourceDuration:2,jobID:UUID());p.transitions=[edge]
+        let output=root.appendingPathComponent("result.mp4")
+        try await MediaEngine.export(p,mediaRoot:root,to:output,size:CGSize(width:320,height:180))
+        let asset=AVURLAsset(url:output);let duration=try await asset.load(.duration).seconds;XCTAssertEqual(duration,3,accuracy:0.05)
+        let g=AVAssetImageGenerator(asset:asset);g.requestedTimeToleranceBefore = .zero;g.requestedTimeToleranceAfter = .zero
+        for t in [0.5,1.25,2.5] {
+            let color=centerPixel(try await g.image(at:CMTime(seconds:t,preferredTimescale:600)).image).map(Int.init)
+            XCTAssertGreaterThan(color[0],color[2]+100,"Original/red frame at \(t)")
+        }
+        let late=centerPixel(try await g.image(at:CMTime(seconds:1.75,preferredTimescale:600)).image).map(Int.init)
+        XCTAssertGreaterThan(late[2],late[0]+100,"Generated source must play, not freeze or fall back to dissolve")
+    }
     func testTwoSourceTransitionsBlendMovingFramesAndWipeInCorrectDirection() async throws {
         let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)
@@ -30,7 +66,7 @@ final class MediaTests: XCTestCase {
         try await makeVideo(at:root.appendingPathComponent("blue.mov"),red:false)
         var p=Project();p.clips=[Clip(filename:"moving.mov",name:"Moving",duration:2),Clip(filename:"blue.mov",name:"Blue",duration:2)]
         var edge=ClipTransition(from:p.clips[0].id,to:p.clips[1].id,duration:1)
-        for style in TransitionStyle.allCases {
+        for style in [TransitionStyle.dissolve,.wipeLeft,.wipeRight,.slideLeft,.slideRight] {
             edge.style=style;p.transitions=[edge]
             let url=root.appendingPathComponent(style.rawValue+".mp4");try await MediaEngine.export(p,mediaRoot:root,to:url,size:CGSize(width:320,height:180))
             let asset=AVURLAsset(url:url);let duration=try await asset.load(.duration);XCTAssertEqual(duration.seconds,3,accuracy:0.05)

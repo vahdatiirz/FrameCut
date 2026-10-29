@@ -9,6 +9,7 @@ struct TimelinePanel:View {
     @Binding var photos:[PhotosPickerItem]
     let importFiles:()->Void
     let openStudio:(StudioTab)->Void
+    let openTransition:(UUID,UUID)->Void
     @State private var zoom:Double=4
     @State private var viewport:CGRect = .zero
     private let mint=Color(red:0.68,green:0.96,blue:0.35)
@@ -28,10 +29,11 @@ struct TimelinePanel:View {
                 HStack(spacing:12){
                     Text("TIMELINE").font(.caption2.monospaced().bold()).foregroundStyle(.secondary)
                     Spacer()
-                    Button{zoom=max(1,zoom/1.5)}label:{Image(systemName:"minus.magnifyingglass")}.accessibilityLabel("Zoom timeline out")
-                    Slider(value:$zoom,in:1...30).frame(maxWidth:130).accessibilityLabel("Timeline zoom")
-                    Text(String(format:"%.1f×",zoom)).font(.caption.monospaced()).frame(width:42)
+                    Button{zoom=max(0.02,zoom/1.5)}label:{Image(systemName:"minus.magnifyingglass")}.accessibilityLabel("Zoom timeline out")
+                    Slider(value:$zoom,in:0.02...30).frame(maxWidth:130).accessibilityLabel("Timeline zoom")
+                    Text(String(format:zoom<1 ? "%.2f×" : "%.1f×",zoom)).font(.caption.monospaced()).frame(width:42)
                     Button{zoom=min(30,zoom*1.5)}label:{Image(systemName:"plus.magnifyingglass")}.accessibilityLabel("Zoom timeline in")
+                    Button{zoom=max(0.02,min(30,(width-48)/max(1,model.project.duration)/30))}label:{Image(systemName:"arrow.left.and.right")}.accessibilityLabel("Fit whole timeline")
                     Menu{
                         PhotosPicker(selection:$photos,maxSelectionCount:20,matching:.any(of:[.images,.videos])){Label("Photo Library",systemImage:"photo.on.rectangle")}
                         Button("Files",action:importFiles)
@@ -51,6 +53,7 @@ struct TimelinePanel:View {
                             ForEach(0..<(textLanes.count+soundLanes.count+layerLanes.count),id:\.self){row in RoundedRectangle(cornerRadius:5).fill(.white.opacity(0.025)).frame(width:contentWidth,height:28).offset(y:92+Double(row)*30)}
                             ruler(width:contentWidth,window:window)
                             clips(window:window)
+                            transitionButtons(window:window)
                             captionRegions(window:window)
                             audioRegions(window:window)
                             overlayRegions(window:window)
@@ -67,7 +70,7 @@ struct TimelinePanel:View {
         Button(action:action){VStack(spacing:3){Image(systemName:icon);Text(name).font(.system(size:8,weight:.semibold))}.frame(width:42,height:height)}.buttonStyle(.plain).foregroundStyle(.secondary).accessibilityLabel("Open \(name) tools")
     }
     private func ruler(width:Double,window:CGRect)->some View {
-        let step:Double=scale>=300 ? 0.1 : scale>=100 ? 0.5 : 1
+        let step:Double=scale>=300 ? 0.1 : scale>=100 ? 0.5 : scale>=30 ? 1 : scale>=6 ? 5 : scale>=1 ? 30 : 60
         let first=max(0,Int(floor(window.minX/scale/step))-1)
         let last=max(first,Int(ceil((window.maxX+80)/scale/step)))
         return ZStack(alignment:.topLeading){
@@ -110,6 +113,28 @@ struct TimelinePanel:View {
                     guard let value=values.first,let id=UUID(uuidString:value),model.project.clips.contains(where:{$0.id==id}) else{return false}
                     model.update{try $0.moveClip(id,before:clip.id)};model.selected=id;return true
                 }
+            }
+        }
+    }
+    private func transitionButtons(window:CGRect)->some View {
+        let placements=model.project.placements
+        return ForEach(Array(model.project.clips.enumerated()).dropFirst(),id:\.element.id){i,clip in
+            let previous=model.project.clips[i-1]
+            let edge=model.project.transitions?.first{$0.from==previous.id && $0.to==clip.id}
+            let x=(placements[i].start+placements[i].incomingDuration/2)*scale
+            if x>=window.minX-24 && x<=window.maxX+24 {
+                Button{openTransition(previous.id,clip.id)}label:{
+                    Image(systemName:"plus")
+                        .font(.system(size:13,weight:.bold)).foregroundStyle(.black)
+                        .frame(width:36,height:34).background(mint,in:RoundedRectangle(cornerRadius:7))
+                        .overlay(alignment:.topTrailing){
+                            if edge != nil{Image(systemName:"checkmark.circle.fill").font(.system(size:10,weight:.bold)).foregroundStyle(.black,mint).offset(x:3,y:-3)}
+                        }
+                        .frame(width:44,height:44).contentShape(Rectangle())
+                }.buttonStyle(.plain).offset(x:x-22,y:34)
+                    .accessibilityLabel("Transition between \(previous.name) and \(clip.name)")
+                    .accessibilityValue(edge?.generatedBridge != nil ? "Generated video bridge" : edge?.style.title ?? "None")
+                    .accessibilityHint("Add or edit the transition at this clip boundary")
             }
         }
     }

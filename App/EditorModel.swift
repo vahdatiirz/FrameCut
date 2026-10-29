@@ -33,7 +33,8 @@ import OSLog
             store = try ProjectStore(root:root.appendingPathComponent("Projects"))
             do {
                 projects = try store.all()
-                if let first = projects.first { project = first; selected = first.clips.first?.id }
+                let lastID=UserDefaults.standard.string(forKey:"FrameCut.lastProjectID").flatMap(UUID.init(uuidString:))
+                if let first = projects.first(where:{$0.id==lastID}) ?? projects.first { project = first; selected = first.clips.first?.id }
             } catch { message = "Saved projects could not be loaded: " + error.localizedDescription }
         } catch { fatalError("Cannot open app storage: \(error.localizedDescription)") }
     }
@@ -43,7 +44,7 @@ import OSLog
             var next = project; try edit(&next);next.removeInactiveTransitions();try next.validate()
             guard next != project else { return }
             try store.save(next)
-            history.record(project); project = next; exported = nil; revision += 1; refreshProjects()
+            history.record(project); project = next; UserDefaults.standard.set(next.id.uuidString,forKey:"FrameCut.lastProjectID");exported = nil; revision += 1; refreshProjects()
         } catch { message = error.localizedDescription }
     }
     func updateClip(_ edit: (inout Clip) throws -> Void) {
@@ -58,12 +59,28 @@ import OSLog
     func refreshProjects() { do { projects = try store.all() } catch { message = error.localizedDescription } }
     func newProject() {
         let next = Project()
-        do { try store.save(next);player.pause();player.replaceCurrentItem(with:nil);project = next; exported = nil; selected = nil; history = History(); revision += 1; refreshProjects() }
+        do { try store.save(next);UserDefaults.standard.set(next.id.uuidString,forKey:"FrameCut.lastProjectID");player.pause();player.replaceCurrentItem(with:nil);project = next; exported = nil; selected = nil; history = History(); revision += 1; refreshProjects() }
         catch { message = error.localizedDescription }
     }
-    func open(_ value: Project) {player.pause();player.replaceCurrentItem(with:nil);project = value; exported = nil; selected = value.clips.first?.id; history = History(); revision += 1 }
+    func open(_ value: Project) {UserDefaults.standard.set(value.id.uuidString,forKey:"FrameCut.lastProjectID");player.pause();player.replaceCurrentItem(with:nil);project = value; exported = nil; selected = value.clips.first?.id; history = History(); revision += 1 }
     func undo() { var h = history; if let p = h.undo(project) { do { try store.save(p); history = h; project = p; exported = nil; revision += 1; refreshProjects() } catch { message = error.localizedDescription } } }
     func redo() { var h = history; if let p = h.redo(project) { do { try store.save(p); history = h; project = p; exported = nil; revision += 1; refreshProjects() } catch { message = error.localizedDescription } } }
+    func openSampleFilm() async {
+        guard !busy else{return}
+        busy=true;busyLabel="Preparing a separate sample film…";defer{busy=false}
+        var copied:[String]=[]
+        do{
+            guard let folder=Bundle.main.resourceURL?.appendingPathComponent("SmokeFixtures") else{throw EditError.missingVideo}
+            var clips:[Clip]=[]
+            for source in ["Dawn.mov","Dusk.mov"]{
+                let filename=try copyMedia(folder.appendingPathComponent(source));copied.append(filename)
+                let duration=try await AVURLAsset(url:mediaRoot.appendingPathComponent(filename)).load(.duration).seconds
+                clips.append(Clip(filename:filename,name:source=="Dawn.mov" ? "Dawn" : "Dusk",duration:duration))
+            }
+            let sample=try SampleProject.make(first:clips[0],second:clips[1])
+            try store.save(sample);open(sample);refreshProjects()
+        }catch{for filename in copied{try? FileManager.default.removeItem(at:mediaRoot.appendingPathComponent(filename))};message="Could not open sample: "+error.localizedDescription}
+    }
     func copyMedia(_ url: URL) throws -> String {
         let scoped = url.startAccessingSecurityScopedResource(); defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         let filename = UUID().uuidString + "." + url.pathExtension

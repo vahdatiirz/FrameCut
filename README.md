@@ -2,51 +2,50 @@
 
 # FrameCut
 
-**An independent, offline-first video editor for iPhone and iPad, inspired by the editing workflow of VN Video Editor.**
+**A free, independent video editor for iPhone and iPad, inspired by the workflow of VN Video Editor.**
 
-**ویرایشگر مستقل ویدئو برای آیفون و آیپد، با الهام از گردش کار VN Video Editor**
+[Download 0.9.0 preview](https://github.com/vahdatiirz/FrameCut/releases/tag/v0.9.0) · [Installation](Docs/INSTALL.md) · [فارسی](README.fa.md) · [Feature coverage](Docs/FEATURE-COVERAGE.md) · [Report a bug](https://github.com/vahdatiirz/FrameCut/issues)
 
-[Download 0.5.0](https://github.com/vahdatiirz/FrameCut/releases/tag/v0.5.0) · [Install / نصب](Docs/INSTALL.md) · [فارسی](README.fa.md) · [Feature coverage](Docs/FEATURE-COVERAGE.md) · [Report a bug](https://github.com/vahdatiirz/FrameCut/issues)
-
-> **Experimental preview — version 0.5.0, build 6.** FrameCut implements a growing set of editing tools; it is not a complete VN replacement. It is not affiliated with, endorsed by, or an official version of VN. No VN code, paid templates, catalog assets or subscription access are included.
+**Experimental preview — 0.9.0, build 14.** FrameCut is not a complete VN replacement or an official VN app. Original implementations and synthetic samples are provided; VN code, paid templates and cloud access are not included.
 
 ## Install
 
-| What you want | Available route |
+| Destination | Installation route |
 |---|---|
-| Run on your iPhone or iPad | Download the source, open the Xcode project on a Mac, select your own signing team and run on your device. |
-| Try without a physical device | Build for an iOS Simulator on a Mac with Xcode. See the release for any available Apple Silicon simulator package. |
-| Tap a link on iPad and install | **Not available yet.** There is no public TestFlight/App Store release or universally installable IPA. A simulator `.app` cannot run on an iPad. |
+| iPhone or iPad | Download the source, open it in Xcode on a Mac, choose your own signing team and run on your device. |
+| Apple Silicon Mac / iOS Simulator | Build from source, or use the clearly labeled simulator archive from this release. |
+| Direct one-tap iPad installation | Not available. There is no public TestFlight/App Store release or universally installable IPA. A simulator app cannot run on a physical iPad. |
 
-The source and simulator package are free to download. Apple signing and distribution rules still apply. Full instructions: **[English / فارسی installation guide](Docs/INSTALL.md)**.
+The source and simulator package are free. Apple signing requirements still apply. [English / Persian instructions](Docs/INSTALL.md).
 
-## Features implemented
+## What it does
 
-- **Timeline editing:** import photos and videos, trim, split, reorder, duplicate, replace, rotate, mirror, fit/fill, save projects and undo/redo. Timeline zoom up to 30×, source poster thumbnails and separate rows for overlapping captions, audio and overlays.
-- **Speed and clip tools:** constant speed from 0.1× to 100×, editable speed curves with six recipes, silent SDR reverse, freeze frames and PNG frame extraction.
-- **Layers and motion:** timed video/photo/transparent-PNG overlays, position, scale, rotation, opacity, masks and editable motion keyframes with easing; **19 original motion recipes**.
-- **Transitions:** two playing sources blended with dissolve, left/right wipe or left/right slide; separate black/white clip fades.
-- **Creative tools:** **12 original editing recipes**, nine looks plus Original, intensity and color adjustments, 3D `.cube` LUT import, shape/polygon masks, feather/inversion, regional blur and square/hexagonal mosaic.
-- **Text:** timed multiline titles/captions, UTF-8 SRT import/export and project-local TTF/OTF font import.
-- **Offline speech:** bundled multilingual **Whisper Tiny** for captions with word timestamps; text-to-speech using voices available on the device. No paid API key or cloud subscription is required for these implemented paths.
-- **Audio:** independent audio regions, source trim, placement, level and fade in/out, plus audio extraction from video.
-- **Export:** unwatermarked SDR MP4 at 720p, 1080p or 4K; 24/25/30/50/60 fps and bitrate choices. Increasing output FPS may repeat source frames; it is not optical-flow interpolation.
-- **Getting started:** a task-based Tools & help panel with searchable English/Persian keywords. The full interface is currently mostly English; complete Persian localization is not claimed.
+- **Edit a film:** import video/photos from Photos or Files; trim, split, reorder, duplicate, replace, rotate, mirror, fit/fill, save drafts and undo/redo. Fit the whole timeline or zoom to 30×; captions, audio and layers have separate rows.
+- **Transitions:** **32 local styles** across Basic, Motion, Matte and Effects. Tap the persistent **+ between clips**, preview both clips, set duration, apply to all or remove. The new **Smoke Drift, Confetti and Gold Confetti** are independent local visual effects. Smoke currently looks like textured mist; cinematic realism and equivalence to VN are not claimed. [New examples](Docs/Atmosphere-0.9.jpg).
+- **Speed and clip tools:** 0.1×–100× speed, editable curves with six recipes, silent SDR reverse, freeze frames and PNG extraction.
+- **Layers and motion:** timed video/photo/transparent-PNG overlays, position, size, rotation, opacity, masks and motion keyframes; **19 original motion recipes**.
+- **Looks and FX:** **30 look choices including Original**, Before/After preview, **12 timed video FX**, intensity/color controls, 3D `.cube` LUT import, shape/polygon masks, regional blur and mosaic.
+- **Creative starting points:** **12 original editing recipes** and a separate editable sample film.
+- **Text and sound:** timed titles/captions, SRT import/export, project-local TTF/OTF fonts, independent audio regions, volume/fades and audio extraction.
+- **Offline speech:** bundled multilingual Whisper Tiny captions with word timings; narration with voices available on the device. These implemented paths need no paid API key.
+- **Export:** unwatermarked SDR MP4, 720p/1080p/4K, 24/25/30/50/60 fps and bitrate choices. Higher FPS can repeat frames; optical-flow interpolation is not implemented.
+- **Guidance:** task-based help with English/Persian search keywords. The interface is mostly English; full Persian localization is incomplete.
 
-A new editor can follow **import → arrange → add text/audio → preview → export**. The top Export button opens quality settings before rendering.
+### Optional experimental Mac generation
 
-## Verification and limits
+The AI bridge prepares two endpoint images and a prompt for a separate Mac companion, then imports an externally rendered MP4 into the overlap. It does **not** run a foundation video model on the iPad. The 17 prompt choices are experimental intentions, not 17 completed VN premium effects. Initial LTX 2B trials failed the requested smoke appearance. External video-model weights/runtime are not bundled. See [Companion instructions and limits](Companion/README.md).
 
-The development build passed **50 core tests** and **five physical-iPad smoke checks**, including offline English captions, local speech synthesis, a 720p30 edited movie and a 4K60 export with 30 decoded frames in half a second. These are bounded checks, not proof of all-device compatibility or an absence of bugs. See [verification details](Docs/VERIFICATION.md).
+## Verification
 
-Still incomplete or unverified: full VN catalog/parity, HDR, HSL animation, stabilization, background cutout, frame interpolation, beat detection/AutoCut, recording, full photo/collage tools, portable protected projects, generated avatars/video, long-film reliability, all language accuracy and complete accessibility. Direct timeline gestures, all 19 rendered motion recipes and mixed-language search entry need broader device testing. Back up important media and use copies while trying this preview.
+**72 core tests passed. Nine synthetic checks passed on a physical iPad Pro 11-inch M4 with iPadOS 26.5.2**, including all 32 local renderers; each new effect exported as a 4.6-second 720p30 film and all 138 frames per film decoded; offline captions/speech, an edited movie and a short 4K60 export also passed. Three existing draft JSON files were unchanged across installation/testing. A fractional-overlap rounding defect was fixed and has an export regression check.
 
-## Build and contribute
+These are bounded tests. They do not establish zero bugs, complete manual UI coverage, real-time performance on every device or full VN parity. [Details and remaining limits](Docs/VERIFICATION.md).
 
-- Deployment target: iOS/iPadOS **18+**. Core package: macOS **15+**.
-- Development environment verified with **Xcode 26.6**, iPadOS **26.5.2** and an Apple Silicon iOS Simulator. Older supported OS versions and Intel simulators have not been verified.
-- Open `FrameCut.xcodeproj`, select scheme **FrameCut**, and choose a simulator or configure your own device signing.
-- Xcode resolves **WhisperKit 1.1.1**. Approximately 81 MB of model/tokenizer assets are bundled and pinned by content hashes; runtime model download is disabled.
+## Build
+
+- iOS/iPadOS 18+; core package macOS 15+. Older supported OS versions remain unverified.
+- Verified development toolchain: Xcode 26.6, Apple Silicon simulator with iOS 26.5.
+- Xcode resolves pinned WhisperKit 1.1.1. Approximately 81 MB of speech-model/tokenizer assets are bundled and content-hash checked; automatic runtime speech-model download is disabled.
 
 ```sh
 git clone https://github.com/vahdatiirz/FrameCut.git
@@ -54,14 +53,8 @@ cd FrameCut
 open FrameCut.xcodeproj
 ```
 
-Core checks on a compatible Mac:
-
-```sh
-swift test
-```
-
-Please report a reproducible case, device/OS, expected result and actual result in [Issues](https://github.com/vahdatiirz/FrameCut/issues). Do not post private media, credentials or device identifiers. See [architecture](Docs/ARCHITECTURE.md).
+Select the FrameCut scheme and a simulator, or configure your own device signing. Core checks: `swift test`.
 
 ## License and credits
 
-Original FrameCut source is [MIT licensed](LICENSE). Bundled model/tokenizer and dependency licenses remain separate; see [third-party notices](THIRD_PARTY_NOTICES.md) and `App/Licenses`. The name VN is used only to explain the inspiration and comparison, not to imply affiliation. Samples are synthetic development media.
+Original FrameCut code is [MIT licensed](LICENSE). Model/runtime/dependency licenses remain separate; see [third-party notices](THIRD_PARTY_NOTICES.md) and `App/Licenses`. VN is named only to explain inspiration and comparison. For issues, provide reproducible steps and non-private sample media; do not upload credentials or device identifiers.

@@ -36,8 +36,8 @@ public enum MediaEngine {
                   let video = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else { throw EditError.missingVideo }
             let assetDuration = try await asset.load(.duration)
             guard clip.end <= assetDuration.seconds + 0.05 else { throw EditError.invalidRange }
-            let scaled = time(placements[index].start+clip.duration)-cursor
             try insert(clip,source:source,into:video,at:cursor)
+            let scaled = CMTimeRangeGetEnd(video.timeRange)-cursor
             let natural = try await source.load(.naturalSize)
             let effects=clip.effects ?? ClipEffects()
             let preferred = try await source.load(.preferredTransform).concatenating(CGAffineTransform(rotationAngle:Double(effects.quarterTurns)*Double.pi/2))
@@ -72,7 +72,19 @@ public enum MediaEngine {
             parameter.setVolume(Float(project.musicVolume),at:.zero); audioParameters.append(parameter)
         }
         var layers:[LayerInstruction]=[]
-        for layer in project.overlays ?? [] where layer.timelineStart < cursor.seconds {
+        var renderLayers:[OverlayLayer]=[]
+        for edge in project.transitions ?? [] {
+            guard let asset=edge.generatedBridge,let index=project.clips.firstIndex(where:{$0.id==edge.to}) else{continue}
+            let overlap=placements[index].incomingDuration
+            guard overlap>0 else{throw EditError.invalidProject}
+            var clip=Clip(filename:asset.filename,name:"Generated transition",duration:asset.sourceDuration)
+            clip.speed=asset.sourceDuration/overlap;clip.volume=0
+            var layer=OverlayLayer(clip:clip);layer.timelineStart=placements[index].start
+            layer.centerX=0.5;layer.centerY=0.5;layer.width=1;layer.height=1
+            renderLayers.append(layer)
+        }
+        renderLayers += project.overlays ?? []
+        for layer in renderLayers where layer.timelineStart < cursor.seconds {
             try Task.checkCancellation()
             let clip=layer.clip
             let asset=AVURLAsset(url:mediaRoot.appendingPathComponent(clip.filename))
@@ -154,17 +166,21 @@ public enum MediaEngine {
         return context.makeImage()
     }
     private static func scenes(_ instructions:[FrameInstruction],project:Project,layers:[LayerInstruction]) throws -> [FrameInstruction] {
-        let boundaries=Array(Set(instructions.flatMap{[$0.timeRange.start.seconds,CMTimeRangeGetEnd($0.timeRange).seconds]})).sorted()
+        // Preserve rational media times. Converting to seconds and back can lose a
+        // tick at a fractional overlap, leaving the last instruction too short.
+        let candidates=instructions.flatMap{[$0.timeRange.start,CMTimeRangeGetEnd($0.timeRange)]}.sorted{CMTimeCompare($0,$1)<0}
+        var boundaries:[CMTime]=[]
+        for boundary in candidates where boundaries.last.map({CMTimeCompare($0,boundary) != 0}) ?? true{boundaries.append(boundary)}
         var result:[FrameInstruction]=[]
-        for (start,end) in zip(boundaries,boundaries.dropFirst()) where end>start {
-            let middle=time((start+end)/2)
+        for (start,end) in zip(boundaries,boundaries.dropFirst()) where CMTimeCompare(end,start)>0 {
+            let middle=start+CMTimeMultiplyByRatio(end-start,multiplier:1,divisor:2)
             let active=instructions.filter{CMTimeRangeContainsTime($0.timeRange,time:middle)}
             guard let first=active.first,active.count<=2 else{throw EditError.invalidProject}
             let secondary=active.count==2 ? active[1] : nil
             let transition=secondary.flatMap{next in project.transitions?.first{$0.from==first.clipID && $0.to==next.clipID}}
             guard secondary==nil || transition != nil else{throw EditError.invalidProject}
             let transitionRange=secondary.map{CMTimeRangeGetIntersection(first.timeRange,otherRange:$0.timeRange)}
-            result.append(first.scene(range:CMTimeRange(start:time(start),duration:time(end)-time(start)),secondary:secondary,transition:transition,transitionRange:transitionRange,layers:layers))
+            result.append(first.scene(range:CMTimeRange(start:start,duration:end-start),secondary:secondary,transition:transition,transitionRange:transitionRange,layers:layers))
         }
         return result
     }
@@ -261,6 +277,7 @@ final class FrameCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
                 let box=CGRect(x:item.box.minX,y:size.height-item.box.maxY,width:item.box.width,height:item.box.height)
                 var foreground=ColorPipeline.apply(source,effects:item.layer.clip.effects ?? ClipEffects(),lut:item.lut).transformed(by:transform).cropped(to:box)
                 let effects=item.layer.clip.effects ?? ClipEffects()
+                foreground=VisualFXPipeline.apply(foreground,effects:effects.visualFX ?? [],progress:(request.compositionTime-item.timeRange.start).seconds/item.layer.clip.duration)
                 foreground=PixelEffects.privacy(foreground,regions:effects.privacyRegions ?? [],bounds:box)
                 if let mask=effects.mask{foreground=PixelEffects.masked(foreground,spec:mask,bounds:box)}
                 if let mask=item.mask {
@@ -289,6 +306,7 @@ final class FrameCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
             .concatenating(instruction.transform)
             .concatenating(CGAffineTransform(a:1,b:0,c:0,d:-1,tx:0,ty:size.height))
         var image=ColorPipeline.apply(CIImage(cvPixelBuffer:source),effects:instruction.effects,lut:instruction.lut).transformed(by:transform)
+        image=VisualFXPipeline.apply(image,effects:instruction.effects.visualFX ?? [],progress:(time-instruction.clipRange.start).seconds/instruction.clipRange.duration.seconds)
         image=PixelEffects.privacy(image,regions:instruction.effects.privacyRegions ?? [],bounds:bounds)
         if let mask=instruction.effects.mask{image=PixelEffects.masked(image,spec:mask,bounds:bounds)}
         if let motion=instruction.motion {
@@ -308,19 +326,9 @@ final class FrameCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
         return image
     }
     private static func transition(_ image:CIImage,to next:CIImage,style:TransitionStyle,progress:Double,bounds:CGRect)->CIImage {
-        switch style {
-        case .dissolve:return image.applyingFilter("CIDissolveTransition",parameters:["inputTargetImage":next,"inputTime":progress])
-        case .wipeLeft:
-            return next.cropped(to:CGRect(x:bounds.maxX-bounds.width*progress,y:bounds.minY,width:bounds.width*progress,height:bounds.height)).composited(over:image)
-        case .wipeRight:
-            return next.cropped(to:CGRect(x:bounds.minX,y:bounds.minY,width:bounds.width*progress,height:bounds.height)).composited(over:image)
-        case .slideLeft,.slideRight:
-            let direction:Double=style == .slideLeft ? -1 : 1
-            let outgoing=image.transformed(by:CGAffineTransform(translationX:direction*bounds.width*progress,y:0))
-            let incoming=next.transformed(by:CGAffineTransform(translationX:-direction*bounds.width*(1-progress),y:0))
-            return incoming.composited(over:outgoing).cropped(to:bounds)
-        }
+        TransitionRenderer.render(image,to:next,style:style,progress:progress,bounds:bounds)
     }
+
     private static func opacity(_ image:CIImage,_ opacity:Double)->CIImage {
         image.applyingFilter("CIColorMatrix",parameters:["inputAVector":CIVector(x:0,y:0,z:0,w:opacity)])
     }

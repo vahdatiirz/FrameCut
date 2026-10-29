@@ -10,3 +10,15 @@ xcuserdata/
 *.pem
 *.ipa
 *.dSYM/
+
+# Optional Mac generation keeps local environments, weights and renders private.
+.venv/
+venv/
+.env
+.env.*
+*.safetensors
+*.ckpt
+Companion/models/
+Companion/renders/
+__pycache__/
+*.pyc

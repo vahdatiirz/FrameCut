@@ -3,9 +3,9 @@ import AVFoundation
 import CoreImage
 import UniformTypeIdentifiers
 
-enum StudioTab:String,CaseIterable,Identifiable { case guide="Tools & help",projects="Projects",templates="Templates",looks="Looks",text="Text",captions="Captions",audio="Audio",layers="Layers",export="Export"
+enum StudioTab:String,CaseIterable,Identifiable { case guide="Tools & help",projects="Projects",templates="Templates",looks="Looks",fx="FX",text="Text",captions="Captions",audio="Audio",layers="Layers",export="Export"
     var id:String{rawValue}
-    var icon:String { switch self {case .guide:return "questionmark.circle";case .projects:return "square.grid.2x2";case .templates:return "square.stack.3d.up";case .looks:return "camera.filters";case .text:return "textformat";case .captions:return "captions.bubble";case .audio:return "waveform";case .layers:return "rectangle.on.rectangle";case .export:return "square.and.arrow.up"} }
+    var icon:String { switch self {case .guide:return "questionmark.circle";case .projects:return "square.grid.2x2";case .templates:return "square.stack.3d.up";case .looks:return "camera.filters";case .fx:return "sparkles";case .text:return "textformat";case .captions:return "captions.bubble";case .audio:return "waveform";case .layers:return "rectangle.on.rectangle";case .export:return "square.and.arrow.up"} }
 }
 struct StudioView:View {
     @EnvironmentObject var model:EditorModel
@@ -18,10 +18,17 @@ struct StudioView:View {
     @State private var confirmRecipe:EditTemplate?
     @State private var lutImport=false
     @State private var maskSheet=false
+    private struct FXRequest:Identifiable {let id=UUID();let kind:VisualFXKind?}
+    @State private var fxRequest:FXRequest?
+    @State private var lookSearch=""
+    @State private var lookCategory="All"
+    @State private var browsingLook:Look = .original
+    @AppStorage("FrameCut.favoriteLooks") private var favoriteLooks=""
+    private var favorites:Set<String>{Set(favoriteLooks.split(separator:",").map(String.init))}
     private let accent=Color(red:0.68,green:0.96,blue:0.35)
     init(initialTab:StudioTab) { _tab=State(initialValue:initialTab) }
     private var clip:Clip? {model.selectedIndex.map{model.project.clips[$0]}}
-    private var effects:ClipEffects {clip?.effects ?? ClipEffects()}
+    private var effects:ClipEffects {if let clip{return clip.effects ?? ClipEffects()};var e=ClipEffects();e.look=browsingLook;return e}
     private var style:ProjectStyle {model.project.style ?? ProjectStyle()}
     var body:some View {
         NavigationStack {
@@ -32,6 +39,7 @@ struct StudioView:View {
                     }}.padding(16)
                 }
                 Divider()
+                if tab == .looks{LookPreviewView(source:sourceFrame,effects:effects,lut:previewLUT,sample:clip==nil)}
                 ScrollView {
                     VStack(alignment:.leading,spacing:22) {
                         switch tab {
@@ -39,6 +47,7 @@ struct StudioView:View {
                         case .projects:projects
                         case .templates:templates
                         case .looks:looks
+                        case .fx:fxSettings
                         case .text:textSettings
                         case .captions:CaptionEditorView()
                         case .audio:AudioEditorView()
@@ -54,18 +63,20 @@ struct StudioView:View {
         }
         .tint(accent)
         .onAppear {draftTitle=model.project.title}
-        .task(id:clip?.filename) {
+        .task(id:(clip?.filename ?? "")+String(clip?.start ?? 0)) {
             sourceFrame=nil
-            guard let clip else{return}
-            let generator=AVAssetImageGenerator(asset:AVURLAsset(url:model.mediaRoot.appendingPathComponent(clip.filename)))
+            let url=clip.map{model.mediaRoot.appendingPathComponent($0.filename)} ?? Bundle.main.resourceURL?.appendingPathComponent("SmokeFixtures/Dawn.mov")
+            guard let url else{return}
+            let generator=AVAssetImageGenerator(asset:AVURLAsset(url:url))
             generator.appliesPreferredTrackTransform=true;generator.maximumSize=CGSize(width:360,height:240)
-            do {let result=try await generator.image(at:CMTime(seconds:clip.start,preferredTimescale:600));sourceFrame=result.image} catch {}
+            do {let result=try await generator.image(at:CMTime(seconds:clip?.start ?? 0,preferredTimescale:600));sourceFrame=result.image} catch {}
         }
         .confirmationDialog("Apply this template?",isPresented:Binding(get:{confirmRecipe != nil},set:{if !$0{confirmRecipe=nil}}),titleVisibility:.visible) {
             Button("Apply to current film") {if let recipe=confirmRecipe {model.applyTemplate(recipe)};confirmRecipe=nil;dismiss()}
             Button("Cancel",role:.cancel){confirmRecipe=nil}
         } message:{Text("Changes clip timing, speed, look, cut treatment and title styling. Your media stays intact. Undo is available in the editor.")}
         .presentationDetents([.large])
+        .sheet(item:$fxRequest){request in FXEditorView(frame:sourceFrame,effects:effects,lut:previewLUT,canApply:clip != nil,initialKind:request.kind){values in model.updateEffects{$0.visualFX=values.isEmpty ? nil : values}}}
         .sheet(isPresented:$maskSheet){MaskEditorView(effects:effects){mask,regions in model.updateEffects{$0.mask=mask;$0.privacyRegions=regions}}}
         .fileImporter(isPresented:$lutImport,allowedContentTypes:[UTType(filenameExtension:"cube") ?? .plainText,.plainText],allowsMultipleSelection:false){result in
             var copied:String?
@@ -115,28 +126,57 @@ struct StudioView:View {
     }
     private var looks:some View {
         VStack(alignment:.leading,spacing:18) {
-            Text("Color your story.").font(.title.bold())
-            if clip == nil {Text("Add and select a clip first. Looks and adjustments apply to the selected clip.").foregroundStyle(.secondary)}
-            else {
-                Text("Selected: \(clip!.name)").font(.subheadline).foregroundStyle(.secondary)
+            Text("Choose a look · انتخاب رنگ").font(.headline)
+            Group {
+                if let clip{Text("Selected: \(clip.name)").font(.subheadline).foregroundStyle(.secondary)}
+                else{Label("Sample preview · your project is unchanged",systemImage:"photo").font(.caption).foregroundStyle(.secondary)}
+                TextField("Search looks",text:$lookSearch).textFieldStyle(.roundedBorder)
+                Picker("Look category",selection:$lookCategory){ForEach(["All","Favorites","Classic","Film","Portrait","Travel","Food & vivid","Monochrome"],id:\.self){Text($0).tag($0)}}
+                Text("۳۰ انتخاب · برای دیدن نتیجه روی یک کارت بزن").font(.caption).foregroundStyle(.secondary)
+                LazyVGrid(columns:[GridItem(.adaptive(minimum:120),spacing:12)],spacing:12){
+                    ForEach(Look.allCases.filter{(lookCategory=="All" || (lookCategory=="Favorites" ? favorites.contains($0.rawValue) : $0.category==lookCategory)) && (lookSearch.isEmpty || $0.label.localizedCaseInsensitiveContains(lookSearch))}){look in
+                        VStack(spacing:4){
+                            Button {if clip == nil{browsingLook=look}else{model.updateEffects{$0.look=look}}} label:{LookCard(look:look,source:sourceFrame,selected:effects.look==look)}.buttonStyle(.plain)
+                            Button{var set=favorites;if !set.insert(look.rawValue).inserted{set.remove(look.rawValue)};favoriteLooks=set.sorted().joined(separator:",")}label:{Image(systemName:favorites.contains(look.rawValue) ? "star.fill" : "star").frame(minWidth:44,minHeight:34)}.accessibilityLabel("Favorite \(look.label)")
+                        }
+                    }
+                }
+                AdjustmentSlider(name:"Look intensity",value:effectBinding(\.intensity),range:0...1).disabled(clip==nil)
+                Button("Apply look to all clips"){let look=effects.look,amount=effects.intensity;model.update{p in for i in p.clips.indices{var e=p.clips[i].effects ?? ClipEffects();e.look=look;e.intensity=amount;p.clips[i].effects=e}}}.buttonStyle(.bordered).disabled(clip==nil)
                 HStack{
-                    Button("Import .cube LUT",systemImage:"square.and.arrow.down"){lutImport=true}.buttonStyle(.bordered)
+                    Button("Import .cube LUT",systemImage:"square.and.arrow.down"){lutImport=true}.buttonStyle(.bordered).disabled(clip==nil)
                     if effects.lutFilename != nil{Button("Remove custom LUT",role:.destructive){model.updateEffects{$0.lutFilename=nil}}}
                 }
-                Button("Masks & privacy",systemImage:"circle.lefthalf.filled"){maskSheet=true}.buttonStyle(.bordered)
-                LazyVGrid(columns:[GridItem(.adaptive(minimum:120),spacing:12)],spacing:12){ForEach(Look.allCases){look in
-                    Button {model.updateEffects{$0.look=look}} label:{LookCard(look:look,source:sourceFrame,selected:effects.look==look)}.buttonStyle(.plain)
-                }}
-                AdjustmentSlider(name:"Look intensity",value:effectBinding(\.intensity),range:0...1)
+                Button("Masks & privacy",systemImage:"circle.lefthalf.filled"){maskSheet=true}.buttonStyle(.bordered).disabled(clip==nil)
                 Divider()
-                AdjustmentSlider(name:"Brightness",value:effectBinding(\.brightness),range:-0.5...0.5)
-                AdjustmentSlider(name:"Contrast",value:effectBinding(\.contrast),range:0.5...2)
-                AdjustmentSlider(name:"Saturation",value:effectBinding(\.saturation),range:0...2)
-                AdjustmentSlider(name:"Exposure",value:effectBinding(\.exposure),range:-2...2)
-                AdjustmentSlider(name:"Warmth",value:effectBinding(\.warmth),range:-1...1)
-                Button("Reset color & LUT"){model.updateEffects{$0.resetColor()}}.buttonStyle(.bordered)
+                AdjustmentSlider(name:"Brightness",value:effectBinding(\.brightness),range:-0.5...0.5).disabled(clip==nil)
+                AdjustmentSlider(name:"Contrast",value:effectBinding(\.contrast),range:0.5...2).disabled(clip==nil)
+                AdjustmentSlider(name:"Saturation",value:effectBinding(\.saturation),range:0...2).disabled(clip==nil)
+                AdjustmentSlider(name:"Exposure",value:effectBinding(\.exposure),range:-2...2).disabled(clip==nil)
+                AdjustmentSlider(name:"Warmth",value:effectBinding(\.warmth),range:-1...1).disabled(clip==nil)
+                Button("Reset color & LUT"){model.updateEffects{$0.resetColor()}}.buttonStyle(.bordered).disabled(clip==nil)
                 Text("Changes appear in the editor preview and are included in export. Slider changes commit when you lift your finger.").font(.caption).foregroundStyle(.secondary)
             }
+        }
+    }
+    private var previewLUT:CubeLUT? {
+        guard let file=effects.lutFilename,let text=try? String(contentsOf:model.mediaRoot.appendingPathComponent(file),encoding:.utf8) else{return nil}
+        return try? CubeLUT.parse(text)
+    }
+    private var fxSettings:some View {
+        VStack(alignment:.leading,spacing:18){
+            Text("FX · more than color").font(.title.bold())
+            Text("12 local effects in Light, Blur, Mosaic, Stylize and Geometry. Stack up to four and set a start/end window and strength for each.").foregroundStyle(.secondary)
+            Button(clip == nil ? "Preview FX on sample" : "Browse & edit FX",systemImage:"sparkles"){fxRequest=FXRequest(kind:nil)}.buttonStyle(.borderedProminent)
+            LazyVGrid(columns:[GridItem(.adaptive(minimum:140))],spacing:10){
+                ForEach(VisualFXKind.allCases){kind in
+                    Button{fxRequest=FXRequest(kind:kind)}label:{VStack(spacing:6){Image(systemName:"sparkles");Text(kind.label).font(.subheadline.bold());Text(kind.category).font(.caption).foregroundStyle(.secondary)}.frame(maxWidth:.infinity,minHeight:72)}.buttonStyle(.bordered)
+                }
+            }
+            if let clip{Text("Selected: \(clip.name)").font(.subheadline);ForEach(effects.visualFX ?? []){fx in Text("\(fx.kind.label) · \(Int(fx.amount*100))%")} }
+            else{Text("The full FX library is available on a sample. Add a photo or video to apply effects to your film.").foregroundStyle(.secondary)}
+            Button("Masks & regional privacy",systemImage:"circle.lefthalf.filled"){maskSheet=true}.buttonStyle(.bordered).disabled(clip==nil)
+            Text("Subject/body effects, tracking and VN’s full catalog are not implemented.").font(.caption).foregroundStyle(.secondary)
         }
     }
     private var textSettings:some View {
@@ -205,10 +245,10 @@ private struct LookCard:View {
     @State private var rendered:UIImage?
     var body:some View {
         VStack(alignment:.leading,spacing:8){
-            if let rendered {Image(uiImage:rendered).resizable().scaledToFill().frame(height:88).clipped()}
+            if let rendered {GeometryReader{g in Image(uiImage:rendered).resizable().scaledToFill().frame(width:g.size.width,height:88).clipped()}.frame(height:88)}
             else {Rectangle().fill(.gray.opacity(0.2)).frame(height:88).overlay(Image(systemName:"camera.filters").font(.title).foregroundStyle(.secondary))}
-            Text(look.label).font(.caption.bold()).padding(.horizontal,8).padding(.bottom,8)
-        }.background(.white.opacity(0.05),in:RoundedRectangle(cornerRadius:12)).clipShape(RoundedRectangle(cornerRadius:12)).overlay(RoundedRectangle(cornerRadius:12).stroke(selected ? Color.green : .clear,lineWidth:2))
+            Text(look.label).font(.caption.bold()).lineLimit(1).frame(maxWidth:.infinity,alignment:.leading).padding(.horizontal,8).padding(.bottom,8)
+        }.frame(maxWidth:.infinity,alignment:.leading).background(.white.opacity(0.05),in:RoundedRectangle(cornerRadius:12)).clipShape(RoundedRectangle(cornerRadius:12)).overlay(RoundedRectangle(cornerRadius:12).stroke(selected ? Color.green : .clear,lineWidth:2))
         .task(id:source.map{String(describing:$0)}) {
             guard let source else{return};var e=ClipEffects();e.look=look
             let input=CIImage(cgImage:source);let output=ColorPipeline.apply(input,effects:e)

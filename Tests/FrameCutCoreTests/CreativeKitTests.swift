@@ -46,6 +46,13 @@ final class CreativeKitTests:XCTestCase {
         effects.intensity=0
         let original=pixel(ColorPipeline.apply(input,effects:effects));XCTAssertGreaterThan(original[0],original[1]+100)
     }
+    func testExpandedLookRecipesRenderAndZeroStrengthPreservesInput() throws {
+        let input=CIImage(color:CIColor(red:0.4,green:0.4,blue:0.4)).cropped(to:CGRect(x:0,y:0,width:1,height:1))
+        for look in Look.allCases {var e=ClipEffects();e.look=look;let result=ColorPipeline.apply(input,effects:e);XCTAssertEqual(result.extent,input.extent);_ = pixel(result)}
+        var e=ClipEffects();e.look = .golden;let warm=pixel(ColorPipeline.apply(input,effects:e));XCTAssertGreaterThan(warm[0],warm[2]+10)
+        e.look = .arctic;let cool=pixel(ColorPipeline.apply(input,effects:e));XCTAssertGreaterThan(cool[2],cool[0]+10)
+        e.intensity=0;let neutral=pixel(ColorPipeline.apply(input,effects:e));XCTAssertEqual(neutral[0],neutral[2],accuracy:1)
+    }
     func testEffectValidationRejectsInvalidNumericParameters() {
         var e=ClipEffects();e.brightness = .nan;XCTAssertThrowsError(try e.validate())
         e=ClipEffects();e.quarterTurns=4;XCTAssertThrowsError(try e.validate())

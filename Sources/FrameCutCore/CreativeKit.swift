@@ -3,8 +3,9 @@ import CoreImage
 
 public enum Look: String, Codable, CaseIterable, Identifiable {
     case original, mono, noir, chrome, fade, instant, process, tonal, transfer, sepia
+    case golden,arctic,cinema,tealAmber,rose,desert,matte,bleach,vivid,portrait,food,midnight,coastal,autumn,coffee,dream,lilac,emerald,steel,copper
     public var id: String { rawValue }
-    public var label: String { rawValue.capitalized }
+    public var label: String {self == .tealAmber ? "Teal & amber" : rawValue.capitalized}
     var filter: String? {
         switch self {
         case .original: return nil
@@ -32,12 +33,14 @@ public struct ClipEffects: Codable, Equatable {
     public var lutFilename:String?
     public var mask:MaskSpec?
     public var privacyRegions:[PrivacyRegion]?
+    public var visualFX:[VisualFX]?
     public init() {}
     public mutating func resetColor(){
         look = .original;intensity=1;brightness=0;contrast=1;saturation=1;exposure=0;warmth=0;lutFilename=nil
     }
     public func validate() throws {
         if let lutFilename{guard !lutFilename.isEmpty,lutFilename==URL(fileURLWithPath:lutFilename).lastPathComponent else{throw EditError.invalidProject}}
+        if let visualFX{guard visualFX.count<=4,Set(visualFX.map(\.id)).count==visualFX.count else{throw EditError.invalidProject};try visualFX.forEach{try $0.validate()}}
         try mask?.validate()
         if let privacyRegions{guard privacyRegions.count<=64,Set(privacyRegions.map(\.id)).count==privacyRegions.count else{throw EditError.invalidProject};try privacyRegions.forEach{try $0.validate()}}
         let values=[intensity,brightness,contrast,saturation,exposure,warmth]
@@ -129,8 +132,8 @@ public enum ColorPipeline {
     public static func apply(_ input:CIImage,effects:ClipEffects,lut:CubeLUT?=nil) -> CIImage {
         var image=input
         if let lut{image=lut.apply(image)}
-        if let name=effects.look.filter, effects.intensity>0 {
-            let filtered=image.applyingFilter(name)
+        if effects.look != .original, effects.intensity>0 {
+            let filtered=effects.look.render(image)
             image=filtered.applyingFilter("CIDissolveTransition",parameters:["inputTargetImage":image,"inputTime":1-effects.intensity])
         }
         image=image.applyingFilter("CIColorControls",parameters:["inputBrightness":effects.brightness,"inputContrast":effects.contrast,"inputSaturation":effects.saturation])

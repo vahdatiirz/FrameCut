@@ -15,7 +15,8 @@ struct EditorView: View {
     @State private var kitRoute:StudioTab?
     @State private var titleSheet = false
     @State private var speedSheet = false
-    @State private var transitionSheet=false
+    private struct TransitionTarget:Identifiable {let from:UUID;let to:UUID;var id:UUID{to}}
+    @State private var transitionTarget:TransitionTarget?
     @State private var draftTitle = ""
     @State private var draftName = ""
     @State private var playhead: Double = 0
@@ -71,9 +72,23 @@ struct EditorView: View {
         .sheet(item:$kitRoute) { route in StudioView(initialTab:route).environmentObject(model) }
         .sheet(isPresented:$titleSheet) { titleEditor }
         .sheet(isPresented:$speedSheet){if let i=model.selectedIndex {SpeedEditorView(clip:model.project.clips[i]){speed,curve in model.updateClip{$0.speed=speed;$0.speedCurve=curve}}}}
-        .sheet(isPresented:$transitionSheet){if let i=model.selectedIndex,i>0{let from=model.project.clips[i-1],to=model.project.clips[i];TransitionEditorView(from:from.id,to:to.id,current:model.project.transitions?.first{$0.from==from.id && $0.to==to.id},limit:min(from.duration,to.duration)/2){edge in model.update{p in p.transitions=p.transitions?.filter{$0.to != to.id} ?? [];if let edge{p.transitions?.append(edge)}}}}}
+        .sheet(item:$transitionTarget){target in
+            if let from=model.project.clips.first(where:{$0.id==target.from}),let to=model.project.clips.first(where:{$0.id==target.to}) {
+                TransitionEditorView(from:from.id,to:to.id,current:model.project.transitions?.first{$0.from==from.id && $0.to==to.id},limit:min(from.duration,to.duration)/2){edge,all in
+                    model.update{p in
+                        if let edge,let asset=edge.generatedBridge{try p.attachGeneratedBridge(from:from.id,to:to.id,asset:asset,duration:edge.duration)}
+                        else{try p.setTransition(from:from.id,to:to.id,style:edge?.style,duration:edge?.duration ?? 0.5,applyToAll:all)}
+                    }
+                }.environmentObject(model)
+            }
+        }
         .alert("FrameCut",isPresented:Binding(get:{model.message != nil},set:{if !$0 { model.message = nil }})) { Button("OK") { model.message = nil } } message: { Text(model.message ?? "") }
         .overlay { if model.busy || model.exporting { ZStack { Color.black.opacity(0.65).ignoresSafeArea(); VStack(spacing:16) { ProgressView(); Text(model.exporting ? "Rendering your film…" : model.busyLabel);if model.canCancelOperation{Button("Cancel"){model.cancelOperation()}}; if model.exporting { Text("Keep FrameCut open until export finishes.").font(.caption).foregroundStyle(.secondary) } }.padding(30).background(panel,in:RoundedRectangle(cornerRadius:20)) } } }
+    }
+    private func openSelectedTransition(){
+        guard model.project.clips.count>1 else{return}
+        let i=max(1,model.selectedIndex ?? 1)
+        transitionTarget=TransitionTarget(from:model.project.clips[i-1].id,to:model.project.clips[i].id)
     }
     private var header: some View {
         HStack(spacing:12) {
@@ -96,6 +111,7 @@ struct EditorView: View {
                     Text("Import photos or videos to start your film").foregroundStyle(.secondary).font(.subheadline)
                     PhotosPicker(selection:$photoSelection,maxSelectionCount:20,matching:.any(of:[.images,.videos])) { Label("Choose photos & videos",systemImage:"plus").bold().padding(13).background(mint,in:Capsule()).foregroundStyle(.black) }
                     Button("Import from Files") { musicImport=false;importer=true }.font(.caption)
+                    Button("فیلم نمونه را امتحان کن · Try sample film"){Task{await model.openSampleFilm()}}.font(.subheadline).disabled(model.busy)
                 }.frame(maxWidth:.infinity,maxHeight:.infinity)
             } else {
                 VideoPlayer(player:model.player).clipShape(RoundedRectangle(cornerRadius:16))
@@ -112,20 +128,28 @@ struct EditorView: View {
             }
             HStack(spacing:25) {
                 Button { model.player.seek(to:.zero) } label: { Image(systemName:"backward.end.fill") }.accessibilityLabel("Go to start")
-                Button { if playing { model.player.pause() } else { if playhead >= model.project.duration-0.1 { model.player.seek(to:.zero) }; model.player.play() } } label: { Image(systemName:playing ? "pause.fill" : "play.fill").font(.title2).frame(width:40,height:40) }.disabled(model.project.clips.isEmpty || model.previewLoading).accessibilityLabel(playing ? "Pause" : "Play")
+                Button { scrubbing=false;if playing { model.player.pause() } else { if playhead >= model.project.duration-0.1 { model.player.seek(to:.zero) }; model.player.play() } } label: { Image(systemName:playing ? "pause.fill" : "play.fill").font(.title2).frame(width:40,height:40) }.disabled(model.project.clips.isEmpty || model.previewLoading).accessibilityLabel(playing ? "Pause" : "Play")
                 Button { model.split(at:playhead) } label: { Image(systemName:"scissors") }.disabled(model.selected == nil).accessibilityLabel("Split at playhead")
             }
         }
     }
     private var timeline: some View {
-        TimelinePanel(playhead:$playhead,scrubbing:$scrubbing,photos:$photoSelection,importFiles:{musicImport=false;replaceImport=false;importer=true},openStudio:{kitRoute=$0})
+        TimelinePanel(playhead:$playhead,scrubbing:$scrubbing,photos:$photoSelection,importFiles:{musicImport=false;replaceImport=false;importer=true},openStudio:{kitRoute=$0},openTransition:{from,to in transitionTarget=TransitionTarget(from:from,to:to)})
     }
     private var inspector: some View {
         VStack(alignment:.leading,spacing:20) {
-            Text("THE EDIT DESK").font(.system(size:10,weight:.bold,design:.monospaced)).tracking(2).foregroundStyle(mint)
+            HStack{
+                Text("THE EDIT DESK").font(.system(size:10,weight:.bold,design:.monospaced)).tracking(2).foregroundStyle(mint)
+                Spacer()
+                Text("\(Bundle.main.object(forInfoDictionaryKey:"CFBundleShortVersionString") as? String ?? "") · \(Bundle.main.object(forInfoDictionaryKey:"CFBundleVersion") as? String ?? "")").font(.caption2.monospaced()).foregroundStyle(.secondary).accessibilityLabel("App version and build")
+            }
             LazyVGrid(columns:[GridItem(.flexible()),GridItem(.flexible())],spacing:10) {
                 Button {kitRoute = .templates} label:{Label("Templates",systemImage:"square.stack.3d.up")}
                 Button {kitRoute = .looks} label:{Label("Looks",systemImage:"camera.filters")}
+                Button {kitRoute = .fx} label:{Label("FX",systemImage:"sparkles")}
+                Button {speedSheet=true} label:{Label("Speed",systemImage:"speedometer")}.disabled(model.selectedIndex==nil)
+                Button {openSelectedTransition()} label:{Label("Transitions",systemImage:"rectangle.on.rectangle.angled")}.disabled(model.project.clips.count<2)
+                Button {kitRoute = .layers} label:{Label("Keyframes",systemImage:"diamond")}.disabled(model.selectedIndex==nil)
                 Button { draftTitle=model.project.title;draftName=model.project.name;titleSheet=true } label: { Label("Title",systemImage:"textformat") }
                 Button { kitRoute = .audio } label: { Label("Audio",systemImage:"waveform") }
                 Button {kitRoute = .layers} label:{Label("Layers",systemImage:"rectangle.on.rectangle")}
@@ -157,7 +181,7 @@ struct EditorView: View {
                     Button {model.updateEffects{$0.mirrored.toggle()}} label:{Label("Mirror",systemImage:"arrow.left.and.right.righttriangle.left.righttriangle.right")}
                 }.buttonStyle(.bordered)
                 Picker("Framing",selection:Binding(get:{(clip.effects ?? ClipEffects()).fit},set:{v in model.updateEffects{$0.fit=v}})) {ForEach(FrameFit.allCases,id:\.self){Text($0.rawValue.capitalized).tag($0)}}.pickerStyle(.segmented)
-                Button("Incoming transition",systemImage:"rectangle.on.rectangle.angled"){transitionSheet=true}.disabled(i==0)
+                Button("Incoming transition",systemImage:"rectangle.on.rectangle.angled"){openSelectedTransition()}.disabled(i==0)
                 Picker("Clip fade",selection:Binding(get:{(clip.effects ?? ClipEffects()).cutStyle},set:{v in model.updateEffects{$0.cutStyle=v}})) {ForEach(CutStyle.allCases,id:\.self){Text($0.label).tag($0)}}
                 Button {kitRoute = .looks} label:{Label("Color & adjustments",systemImage:"slider.horizontal.3")}
                 Button{speedSheet=true}label:{Label(clip.speedCurve == nil ? String(format:"Speed %.2g×",clip.speed) : "Speed curve active",systemImage:"speedometer")}.buttonStyle(.bordered)

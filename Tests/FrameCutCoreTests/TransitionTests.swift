@@ -1,6 +1,19 @@
 import XCTest
 @testable import FrameCutCore
 final class TransitionTests:XCTestCase {
+    func testTransitionEditsAreAtomicAndApplyToEveryAdjacentPair() throws {
+        var p=Project();p.clips=(0..<4).map{Clip(filename:"\($0).mov",name:"Clip",duration:4)}
+        try p.setTransition(from:p.clips[0].id,to:p.clips[1].id,style:.circle,duration:0.75,applyToAll:true)
+        XCTAssertEqual(p.transitions?.count,3);XCTAssertEqual(p.duration,13.75,accuracy:0.001)
+        let encoder=JSONEncoder();encoder.outputFormatting=[.sortedKeys];let before=try encoder.encode(p)
+        XCTAssertThrowsError(try p.setTransition(from:p.clips[0].id,to:p.clips[3].id,style:.dissolve,duration:1))
+        XCTAssertEqual(try encoder.encode(p),before)
+        XCTAssertThrowsError(try p.setTransition(from:p.clips[0].id,to:p.clips[1].id,style:.dissolve,duration:.nan))
+        XCTAssertEqual(try encoder.encode(p),before)
+        try p.setTransition(from:p.clips[1].id,to:p.clips[2].id,style:nil,duration:1)
+        XCTAssertEqual(p.transitions?.count,2);try p.validate()
+    }
+
     func testOverlapsShortenTimelineAndNeverRequireThreeMainClips() throws {
         var p=Project();p.clips=(0..<3).map{Clip(filename:"\($0).mov",name:"\($0)",duration:2)}
         p.transitions=[ClipTransition(from:p.clips[0].id,to:p.clips[1].id,duration:2),ClipTransition(from:p.clips[1].id,to:p.clips[2].id,duration:2)]

@@ -13,9 +13,13 @@ struct LayerEditorView:View {
             Text("More than one frame.").font(.title.bold())
             Text("Overlay videos, photos and transparent PNG stickers with independent timing, framing, opacity and masks. Layers lower in this list appear above earlier layers.").foregroundStyle(.secondary)
             HStack{
-                Button("Add overlay",systemImage:"rectangle.on.rectangle"){importing=true}.buttonStyle(.borderedProminent).disabled(loading || model.project.clips.isEmpty)
+                Button(model.project.clips.isEmpty ? "افزودن اولین عکس یا ویدئو" : "Add overlay",systemImage:"rectangle.on.rectangle"){importing=true}.buttonStyle(.borderedProminent).disabled(loading || model.busy)
                 Button("Animate selected clip",systemImage:"diamond"){motion=true}.buttonStyle(.bordered).disabled(model.selectedIndex==nil)
             }
+            if model.project.clips.isEmpty{
+                Text("لایه‌ها رسانه‌هایی هستند که خودت اضافه می‌کنی. ابتدا یک عکس یا ویدئو انتخاب کن؛ سپس می‌توانی تصویر یا ویدئوی دیگری را روی آن بگذاری.").font(.subheadline).foregroundStyle(.secondary)
+                Button("بازکردن پروژهٔ نمونه · Try sample film",systemImage:"play.rectangle"){Task{await model.openSampleFilm()}}.buttonStyle(.bordered).disabled(model.busy || loading)
+            }else if (model.project.overlays ?? []).isEmpty{Text("No overlay yet. Tap Add overlay to place a photo or video above your film.").foregroundStyle(.secondary)}
             if loading{ProgressView("Importing overlay…")}
             ForEach(model.project.overlays ?? []){layer in
                 HStack{
@@ -31,6 +35,7 @@ struct LayerEditorView:View {
                 var copied:String?
                 do{
                     guard let url=try result.get().first else{return}
+                    if model.project.clips.isEmpty{await model.importFiles([url],music:false);return}
                     let name=try model.copyMedia(url);copied=name
                     let asset=AVURLAsset(url:model.mediaRoot.appendingPathComponent(name))
                     let still=UTType(filenameExtension:url.pathExtension)?.conforms(to:.image) == true

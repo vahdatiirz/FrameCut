@@ -72,6 +72,11 @@ public struct SpeedCurve:Codable,Equatable {
         let lower=domainStart ?? 0,length=(domainEnd ?? 1)-lower
         return rawIntegral(from:lower,to:lower+length*max(0,min(1,fraction)))/length
     }
+    /// Signed output fraction for a source position, including constant-speed extensions beyond the curve domain.
+    public func outputFraction(forSourceFraction fraction:Double)->Double {
+        let lower=domainStart ?? 0,length=(domainEnd ?? 1)-lower
+        return rawIntegral(from:lower,to:lower+length*fraction)/length/integral()
+    }
     public func sourceFraction(forOutputFraction fraction:Double)->Double {
         let target=integral()*fraction
         var low:Double=0,high:Double=1

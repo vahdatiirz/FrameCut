@@ -1,4 +1,4 @@
-# Install FrameCut 0.5.0
+# Install FrameCut 0.9.0
 
 [فارسی](#نصب-فارسی)
 
@@ -7,7 +7,7 @@ FrameCut is an experimental native iPhone/iPad app. There is currently **no publ
 ## iPhone or iPad — build with Xcode
 
 1. Use a Mac with Xcode. Development was verified with Xcode 26.6. The app's deployment target is iOS/iPadOS 18+, but older OS versions have not yet been tested.
-2. Download `FrameCut-0.5.0-Source.zip` from the [release](https://github.com/vahdatiirz/FrameCut/releases/tag/v0.5.0), extract it, and open `FrameCut.xcodeproj` inside its folder. Alternatively clone the repository.
+2. Download `FrameCut-0.9.0-Source.zip` from the [release](https://github.com/vahdatiirz/FrameCut/releases/tag/v0.9.0), extract it, and open `FrameCut.xcodeproj` inside its folder. Alternatively clone the repository.
 3. Allow Xcode to resolve the pinned Swift package dependency. Internet is needed for this first build; the speech model is already included in the source package.
 4. Select the **FrameCut** target → **Signing & Capabilities**. Enable automatic signing, select **your own team**, and use a unique bundle identifier, such as `com.yourname.framecut`.
 5. Connect and unlock your device. Pair/trust it using Xcode's normal device flow. If iOS asks for Developer Mode or developer trust, follow Apple's on-device instructions yourself.
@@ -27,7 +27,7 @@ Open `FrameCut.xcodeproj`, choose **FrameCut** and an installed iPhone/iPad simu
 
 ### Prebuilt Apple Silicon simulator package
 
-If the release includes `FrameCut-0.5.0-Simulator-arm64.zip`, it contains an iOS **Simulator** `.app`, built with the iOS 26.5 SDK and tested with the iOS 26.5 runtime on Apple Silicon. It is not an iPhone/iPad device app and not an Intel simulator package.
+If the release includes `FrameCut-0.9.0-Simulator-arm64.zip`, it contains an iOS **Simulator** `.app`, built with the iOS 26.5 SDK and tested with the iOS 26.5 runtime on Apple Silicon. It is not an iPhone/iPad device app and not an Intel simulator package.
 
 1. Install Xcode and its matching iOS 26.5 simulator runtime, and boot one iPhone or iPad simulator in Xcode/Simulator.
 2. Extract the zip. With only the intended simulator booted, drag `FrameCut.app` onto its screen, or run from the extracted folder:
@@ -59,7 +59,7 @@ A public TestFlight link requires an App Store Connect app record, an eligible u
 
 برای آیفون/آیپد:
 
-۱. روی مک Xcode را نصب کنید؛ سورس نسخهٔ ۰٫۵ را از Release دانلود و باز کنید.
+۱. روی مک Xcode را نصب کنید؛ سورس نسخهٔ ۰٫۹ را از Release دانلود و باز کنید.
 ۲. فایل `FrameCut.xcodeproj` را باز کنید و اجازه دهید وابستگی‌ها دریافت شوند.
 ۳. در Signing & Capabilities، تیم خودتان و یک Bundle Identifier یکتا انتخاب کنید.
 ۴. دستگاه را متصل و باز کنید، مراحل اعتماد/Developer Mode را طبق دستور خود اپل انجام دهید.
